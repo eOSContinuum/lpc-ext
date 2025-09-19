@@ -17,7 +17,8 @@
 
 
 static const EVP_MD *md_md5, *md_sha1, *md_sha224, *md_sha256, *md_sha384,
-		    *md_sha512;
+		    *md_sha512, *md_sha3_224, *md_sha3_256, *md_sha3_384,
+		    *md_sha3_512, *md_keccak256;
 static const EVP_CIPHER *cipher_aes_128_gcm, *cipher_aes_256_gcm,
 			*cipher_chacha20_poly1305, *cipher_aes_128_ccm;
 
@@ -144,6 +145,86 @@ static void sha512(LPC_frame f, int nargs, LPC_value retval)
 	lpc_runtime_check(f, lpc_string_length(str));
     }
     hash(md_sha512, f, nargs, retval);
+}
+
+/*
+ * produce SHA3-224 hash
+ */
+static void sha3_224(LPC_frame f, int nargs, LPC_value retval)
+{
+    int i;
+    LPC_string str;
+
+    lpc_runtime_check(f, 3 * nargs + 64);
+    for (i = 0; i < nargs; i++) {
+	str = lpc_string_getval(lpc_frame_arg(f, nargs, i));
+	lpc_runtime_check(f, lpc_string_length(str));
+    }
+    hash(md_sha3_224, f, nargs, retval);
+}
+
+/*
+ * produce SHA3-256 hash
+ */
+static void sha3_256(LPC_frame f, int nargs, LPC_value retval)
+{
+    int i;
+    LPC_string str;
+
+    lpc_runtime_check(f, 3 * nargs + 64);
+    for (i = 0; i < nargs; i++) {
+	str = lpc_string_getval(lpc_frame_arg(f, nargs, i));
+	lpc_runtime_check(f, lpc_string_length(str));
+    }
+    hash(md_sha3_256, f, nargs, retval);
+}
+
+/*
+ * produce SHA3-384 hash
+ */
+static void sha3_384(LPC_frame f, int nargs, LPC_value retval)
+{
+    int i;
+    LPC_string str;
+
+    lpc_runtime_check(f, 3 * nargs + 64);
+    for (i = 0; i < nargs; i++) {
+	str = lpc_string_getval(lpc_frame_arg(f, nargs, i));
+	lpc_runtime_check(f, lpc_string_length(str));
+    }
+    hash(md_sha3_384, f, nargs, retval);
+}
+
+/*
+ * produce SHA3-512 hash
+ */
+static void sha3_512(LPC_frame f, int nargs, LPC_value retval)
+{
+    int i;
+    LPC_string str;
+
+    lpc_runtime_check(f, 3 * nargs + 64);
+    for (i = 0; i < nargs; i++) {
+	str = lpc_string_getval(lpc_frame_arg(f, nargs, i));
+	lpc_runtime_check(f, lpc_string_length(str));
+    }
+    hash(md_sha3_512, f, nargs, retval);
+}
+
+/*
+ * produce KECCAK-256 hash
+ */
+static void keccak256(LPC_frame f, int nargs, LPC_value retval)
+{
+    int i;
+    LPC_string str;
+
+    lpc_runtime_check(f, 3 * nargs + 64);
+    for (i = 0; i < nargs; i++) {
+	str = lpc_string_getval(lpc_frame_arg(f, nargs, i));
+	lpc_runtime_check(f, lpc_string_length(str));
+    }
+    hash(md_keccak256, f, nargs, retval);
 }
 
 /*
@@ -1663,6 +1744,10 @@ static LPC_ext_kfun kf[] = {
     { "hash SHA256", hash_proto, &sha256 },
     { "hash SHA384", hash_proto, &sha384 },
     { "hash SHA512", hash_proto, &sha512 },
+    { "hash SHA3-224", hash_proto, &sha3_224 },
+    { "hash SHA3-256", hash_proto, &sha3_256 },
+    { "hash SHA3-384", hash_proto, &sha3_384 },
+    { "hash SHA3-512", hash_proto, &sha3_512 },
     { "secure_random", secure_random_proto, &secure_random },
     { "verify_certificate", verify_proto, &verify_certificate },
     { "mask_xor", mask_xor_proto, mask_xor },
@@ -1696,7 +1781,8 @@ static LPC_ext_kfun kf[] = {
     { "decrypt ECDSA-SECP521R1-SHA512 verify", ec_verify_proto,
       secp521r1_verify },
     { "decrypt Ed25519 verify", ec_verify_proto, ed25519_verify },
-    { "decrypt Ed448 verify", ec_verify_proto, ed448_verify }
+    { "decrypt Ed448 verify", ec_verify_proto, ed448_verify },
+    { "hash KECCAK-256", hash_proto, &keccak256 }
 };
 
 int lpc_ext_init(int major, int minor, const char *config)
@@ -1707,11 +1793,19 @@ int lpc_ext_init(int major, int minor, const char *config)
     md_sha256 = EVP_get_digestbyname("SHA256");
     md_sha384 = EVP_get_digestbyname("SHA384");
     md_sha512 = EVP_get_digestbyname("SHA512");
+    md_sha3_224 = EVP_get_digestbyname("SHA3-224");
+    md_sha3_256 = EVP_get_digestbyname("SHA3-256");
+    md_sha3_384 = EVP_get_digestbyname("SHA3-384");
+    md_sha3_512 = EVP_get_digestbyname("SHA3-512");
+# ifdef OPENSSL_VERSION_MAJOR	/* undefined before 3.0 */
+    md_keccak256 = EVP_MD_fetch(NULL, "KECCAK-256", NULL);
+# endif
     cipher_aes_128_gcm = EVP_get_cipherbyname("id-aes128-GCM");
     cipher_aes_256_gcm = EVP_get_cipherbyname("id-aes256-GCM");
     cipher_chacha20_poly1305 = EVP_get_cipherbyname("ChaCha20-Poly1305");
     cipher_aes_128_ccm = EVP_get_cipherbyname("id-aes128-CCM");
 
-    lpc_ext_kfun(kf, sizeof(kf) / sizeof(LPC_ext_kfun));
+    lpc_ext_kfun(kf,
+		 sizeof(kf) / sizeof(LPC_ext_kfun) - (md_keccak256 == NULL));
     return 1;
 }
