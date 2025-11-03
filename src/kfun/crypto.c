@@ -769,6 +769,14 @@ static void ec_key(LPC_frame f, int nargs, int nid, int len, LPC_value retval)
 }
 
 /*
+ * ({ public, privkey }) = encrypt("SECP256K1 key")
+ */
+static void secp256k1_key(LPC_frame f, int nargs, LPC_value retval)
+{
+    ec_key(f, nargs, NID_secp256k1, 32, retval);
+}
+
+/*
  * ({ public, privkey }) = encrypt("SECP256R1 key")
  */
 static void secp256r1_key(LPC_frame f, int nargs, LPC_value retval)
@@ -934,6 +942,14 @@ static void ec_sign(LPC_frame f, int nargs, int nid, const EVP_MD *md, int len,
 
     signature = lpc_string_new(lpc_frame_dataspace(f), buffer, size);
     lpc_string_putval(retval, signature);
+}
+
+/*
+ * signature = encrypt("ECDSA-SECP256K1-SHA256 sign", privkey, message)
+ */
+static void secp256k1_sign(LPC_frame f, int nargs, LPC_value retval)
+{
+    ec_sign(f, nargs, NID_secp256k1, md_sha256, 32, retval);
 }
 
 /*
@@ -1418,6 +1434,14 @@ static void ec_derive(LPC_frame f, int nargs, int nid, int len,
 }
 
 /*
+ * shared_secret = decrypt("SECP256K1 derive", privkey, peerx, peery)
+ */
+static void secp256k1_derive(LPC_frame f, int nargs, LPC_value retval)
+{
+    ec_derive(f, nargs, NID_secp256k1, 32, retval);
+}
+
+/*
  * shared_secret = decrypt("SECP256R1 derive", privkey, peerx, peery)
  */
 static void secp256r1_derive(LPC_frame f, int nargs, LPC_value retval)
@@ -1606,6 +1630,14 @@ static void ec_verify(LPC_frame f, int nargs, int nid, const EVP_MD *md,
 }
 
 /*
+ * bool = decrypt("ECDSA-SECP256K1-SHA256 verify", x, y, signature, message)
+ */
+static void secp256k1_verify(LPC_frame f, int nargs, LPC_value retval)
+{
+    ec_verify(f, nargs, NID_secp256k1, md_sha256, 32, retval);
+}
+
+/*
  * bool = decrypt("ECDSA-SECP256R1-SHA256 verify", x, y, signature, message)
  */
 static void secp256r1_verify(LPC_frame f, int nargs, LPC_value retval)
@@ -1755,11 +1787,13 @@ static LPC_ext_kfun kf[] = {
     { "encrypt AES-256-GCM", cipher_proto, &encrypt_aes_256_gcm },
     { "encrypt ChaCha20-Poly1305", cipher_proto, &encrypt_chacha20_poly1305 },
     { "encrypt AES-128-CCM", cipher_proto, &encrypt_aes_128_ccm },
+    { "encrypt SECP256K1 key", ec_key_proto, &secp256k1_key },
     { "encrypt SECP256R1 key", ec_key_proto, &secp256r1_key },
     { "encrypt SECP384R1 key", ec_key_proto, &secp384r1_key },
     { "encrypt SECP521R1 key", ec_key_proto, &secp521r1_key },
     { "encrypt X25519 key", ec_key_proto, &x25519_key },
     { "encrypt X448 key", ec_key_proto, &x448_key },
+    { "encrypt ECDSA-SECP256K1-SHA256 sign", ec_sign_proto, secp256k1_sign },
     { "encrypt ECDSA-SECP256R1-SHA256 sign", ec_sign_proto, secp256r1_sign },
     { "encrypt ECDSA-SECP384R1-SHA384 sign", ec_sign_proto, secp384r1_sign },
     { "encrypt ECDSA-SECP521R1-SHA512 sign", ec_sign_proto, secp521r1_sign },
@@ -1769,11 +1803,14 @@ static LPC_ext_kfun kf[] = {
     { "decrypt AES-256-GCM", cipher_proto, &decrypt_aes_256_gcm },
     { "decrypt ChaCha20-Poly1305", cipher_proto, &decrypt_chacha20_poly1305 },
     { "decrypt AES-128-CCM", cipher_proto, &decrypt_aes_128_ccm },
+    { "decrypt SECP256K1 derive", ec_derive_proto, &secp256k1_derive },
     { "decrypt SECP256R1 derive", ec_derive_proto, &secp256r1_derive },
     { "decrypt SECP384R1 derive", ec_derive_proto, &secp384r1_derive },
     { "decrypt SECP521R1 derive", ec_derive_proto, &secp521r1_derive },
     { "decrypt X25519 derive", ec_derive_proto, &x25519_derive },
     { "decrypt X448 derive", ec_derive_proto, &x448_derive },
+    { "decrypt ECDSA-SECP256K1-SHA256 verify", ec_verify_proto,
+      secp256k1_verify },
     { "decrypt ECDSA-SECP256R1-SHA256 verify", ec_verify_proto,
       secp256r1_verify },
     { "decrypt ECDSA-SECP384R1-SHA384 verify", ec_verify_proto,
