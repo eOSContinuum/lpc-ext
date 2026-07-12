@@ -379,7 +379,7 @@ static void kf_tls_receive(LPC_frame f, int nargs, LPC_value retval)
 	    outbuflen += size;
 	    progress += size;
 	}
-    } while (len != 0 && progress != 0 && buflen != sizeof(buffer) &&
+    } while (progress != 0 && buflen != sizeof(buffer) &&
 	     outbuflen != sizeof(outbuf));
 
     /* return ({ left-to-receive, received, sent, "EOF" }) */
