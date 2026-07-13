@@ -1,7 +1,9 @@
+/* SPDX-License-Identifier: BSD-2-Clause-Patent */
 /*
  * crypto kfun extensions
  *
- * This code is released into the public domain.
+ * Originally released into the public domain as part of Dworkin's lpc-ext;
+ * redistributed in this fork under BSD-2-Clause-Patent.
  */
 
 # include <openssl/evp.h>
@@ -1630,7 +1632,7 @@ static void ec_verify(LPC_frame f, int nargs, int nid, const EVP_MD *md,
 }
 
 /*
- * bool = decrypt("ECDSA-SECP256K1-SHA256 verify", x, y, signature, message)
+ * bool = decrypt("ECDSA-SECP256K1-SHA256 verify", pubkey, signature, message)
  */
 static void secp256k1_verify(LPC_frame f, int nargs, LPC_value retval)
 {
@@ -1638,7 +1640,7 @@ static void secp256k1_verify(LPC_frame f, int nargs, LPC_value retval)
 }
 
 /*
- * bool = decrypt("ECDSA-SECP256R1-SHA256 verify", x, y, signature, message)
+ * bool = decrypt("ECDSA-SECP256R1-SHA256 verify", pubkey, signature, message)
  */
 static void secp256r1_verify(LPC_frame f, int nargs, LPC_value retval)
 {
@@ -1646,7 +1648,7 @@ static void secp256r1_verify(LPC_frame f, int nargs, LPC_value retval)
 }
 
 /*
- * bool = decrypt("ECDSA-SECP384R1-SHA384 verify", x, y, signature, message)
+ * bool = decrypt("ECDSA-SECP384R1-SHA384 verify", pubkey, signature, message)
  */
 static void secp384r1_verify(LPC_frame f, int nargs, LPC_value retval)
 {
@@ -1654,7 +1656,7 @@ static void secp384r1_verify(LPC_frame f, int nargs, LPC_value retval)
 }
 
 /*
- * bool = decrypt("ECDSA-SECP521R1-SHA521 verify", x, y, signature, message)
+ * bool = decrypt("ECDSA-SECP521R1-SHA512 verify", pubkey, signature, message)
  */
 static void secp521r1_verify(LPC_frame f, int nargs, LPC_value retval)
 {
