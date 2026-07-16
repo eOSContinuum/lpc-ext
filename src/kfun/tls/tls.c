@@ -425,7 +425,9 @@ static void kf_tls_close(LPC_frame f, int nargs, LPC_value retval)
     restore(data, &tls, &bio);
 
     /* close TLS session */
-    SSL_shutdown(tls);
+    if (SSL_shutdown(tls) < 0) {
+	ERR_clear_error();
+    }
     buflen = 0;
     if (BIO_ctrl_pending(bio) != 0) {
 	/* flush output buffer */
